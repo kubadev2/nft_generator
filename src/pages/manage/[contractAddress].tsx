@@ -2,9 +2,9 @@
 
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { DynamicNFTAbi } from '@/utils/DynamicNFTAbi';
+import { useState, useMemo } from 'react';
+import { useAccount, useReadContracts, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { DynamicNFTAbi } from '@/utils/DynamicNFTAbi'; 
 import { type Address } from 'viem';
 import Link from 'next/link';
 
@@ -16,15 +16,31 @@ export default function ManageContract() {
   const [mintTo, setMintTo] = useState<Address | ''>('');
   const [quantity, setQuantity] = useState('1');
 
-  const { data: hash, error, isPending, writeContract } = useWriteContract();
-  const { data: totalSupply } = useReadContract({
+  const contract = {
     address: contractAddress as Address,
     abi: DynamicNFTAbi,
-    functionName: 'nextTokenId',
+  };
+  
+  const { data: contractData, isLoading: isReading } = useReadContracts({
+    contracts: [
+      { ...contract, functionName: 'name' },
+      { ...contract, functionName: 'maxSupply' },
+      { ...contract, functionName: 'nextTokenId' },
+    ],
     query: {
       enabled: !!contractAddress, 
     },
   });
+
+  const [name, maxSupply, totalSupply] = useMemo(() => {
+    return [
+      contractData?.[0]?.result as string | undefined,
+      contractData?.[1]?.result as bigint | undefined,
+      contractData?.[2]?.result as bigint | undefined,
+    ]
+  }, [contractData]);
+
+  const { data: hash, error, isPending, writeContract } = useWriteContract();
 
   const handleMint = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,17 +55,29 @@ export default function ManageContract() {
 
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
   
-  if (!contractAddress) return <p>Ładowanie...</p>;
+  if (!contractAddress || isReading) return <p>Ładowanie danych kontraktu...</p>;
+
+  const isLimited = maxSupply !== undefined && maxSupply > 0n;
+  const remainingSupply = (maxSupply !== undefined && totalSupply !== undefined) ? Number(maxSupply) - Number(totalSupply) : 0;
 
   return (
     <main style={styles.main}>
       <div style={styles.header}>
-        <h1 style={styles.title}>Zarządzaj Kontraktem</h1>
+        <h1 style={styles.title}>{name ?? 'Zarządzaj Kontraktem'}</h1>
         <ConnectButton />
       </div>
       <div style={styles.container}>
         <p>Adres kontraktu: <strong>{contractAddress}</strong></p>
         <p>Wymintowano do tej pory: <strong>{totalSupply?.toString() ?? '...'}</strong></p>
+        
+        {isLimited ? (
+          <p style={{ fontWeight: 'bold' }}>
+            Pozostało do wymintowania: {remainingSupply} / {maxSupply?.toString()}
+          </p>
+        ) : (
+          <p style={{ fontWeight: 'bold' }}>Kolekcja nielimitowana</p>
+        )}
+
         <hr style={{margin: '2rem 0'}} />
         <h2 style={styles.subtitle}>Wymintuj nowe tokeny</h2>
         {isConnected ? (
@@ -80,7 +108,12 @@ export default function ManageContract() {
 const styles: { [key: string]: React.CSSProperties } = {
   main: { fontFamily: 'sans-serif', padding: '2rem' },
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' },
-  title: { margin: 0 },
+  title: { margin: 0,
+    maxWidth: 'calc(100% - 200px)',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap'
+},
   container: { maxWidth: '500px', margin: '2rem auto', padding: '2rem', border: '1px solid #ddd', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' },
   form: { display: 'flex', flexDirection: 'column', gap: '1rem' },
   subtitle: { marginTop: 0, textAlign: 'center' },

@@ -1,3 +1,5 @@
+// src/pages/my-contracts.tsx
+
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
 import { useState, useEffect } from 'react';
@@ -6,6 +8,7 @@ import { type Address } from 'viem';
 
 interface FetchedContract {
   contractAddress: Address;
+  collectionName: string;
   createdAt: number;
 }
 
@@ -38,7 +41,6 @@ export default function MyContractsPage() {
         setIsLoading(false);
       }
     };
-
     fetchContracts();
   }, [isConnected, address]);
 
@@ -59,15 +61,16 @@ export default function MyContractsPage() {
               userContracts.length > 0 ? (
                 <>
                   <h3>Twoje wdrożone kontrakty:</h3>
-                  <ul>
+                  <ul style={{ listStyle: 'none', padding: 0 }}>
                     {userContracts.map(record => (
-                      <li key={record.contractAddress}>
+                      <li key={record.contractAddress} style={{ marginBottom: '1rem', border: '1px solid #eee', padding: '1rem', borderRadius: '8px' }}>
                         <Link href={`/manage/${record.contractAddress}`} style={styles.link}>
-                          {shortenAddress(record.contractAddress)}
+                          <strong style={{ fontSize: '1.2rem' }}>{record.collectionName}</strong>
                         </Link>
-                        <span style={{ marginLeft: '1rem', color: '#666' }}>
-                          (Wdrożono: {new Date(record.createdAt).toLocaleString()})
-                        </span>
+                        <div style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.5rem' }}>
+                          <p style={{ margin: 0 }}>Adres: {shortenAddress(record.contractAddress)}</p>
+                          <p style={{ margin: 0 }}>Wdrożono: {new Date(record.createdAt).toLocaleString()}</p>
+                        </div>
                       </li>
                     ))}
                   </ul>
@@ -90,6 +93,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     title: { margin: 0 },
     container: { maxWidth: '700px', margin: '2rem auto', padding: '2rem', border: '1px solid #ddd', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' },
     results: { textAlign: 'left' },
-    link: { color: '#0070f3', textDecoration: 'none', fontWeight: 'bold' },
+    link: { color: '#0070f3', textDecoration: 'none' },
     backLink: { display: 'block', textAlign: 'center', marginTop: '2rem', color: '#0070f3' }
 };

@@ -24,7 +24,7 @@ export default function Home() {
   
   const { isLoading: isConfirming, isSuccess: isConfirmed, data: receipt } = useWaitForTransactionReceipt({ hash });
 
-  useEffect(() => {
+   useEffect(() => {
     const saveDeployedContract = async () => {
       if (isConfirmed && receipt?.contractAddress && address) {
         try {
@@ -34,6 +34,7 @@ export default function Home() {
             body: JSON.stringify({
               contractAddress: receipt.contractAddress,
               deployerAddress: address,
+              collectionName: collectionName,
             }),
           });
           console.log('Zapisano kontrakt w bazie danych!');
@@ -43,7 +44,7 @@ export default function Home() {
       }
     };
     saveDeployedContract();
-  }, [isConfirmed, receipt, address]); 
+  }, [isConfirmed, receipt, address, collectionName]);
 
   const handleDeploy = (e: React.FormEvent) => {
     e.preventDefault();
