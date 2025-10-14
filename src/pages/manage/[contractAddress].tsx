@@ -17,8 +17,6 @@ export default function ManageContract() {
   const [quantity, setQuantity] = useState('1');
 
   const { data: hash, error, isPending, writeContract } = useWriteContract();
-  
-  // ZMIANA: Opcja 'enabled' jest teraz wewnątrz obiektu 'query'
   const { data: totalSupply } = useReadContract({
     address: contractAddress as Address,
     abi: DynamicNFTAbi,

@@ -22,12 +22,10 @@ export default function Home() {
 
   const { data: hash, error, isPending, deployContract } = useDeployContract();
   
-  // ZMIANA W TEJ LINII
   const { isLoading: isConfirming, isSuccess: isConfirmed, data: receipt } = useWaitForTransactionReceipt({ hash });
 
   useEffect(() => {
     const saveDeployedContract = async () => {
-      // Tutaj używamy już isConfirmed, ale pobieramy je jako isSuccess
       if (isConfirmed && receipt?.contractAddress && address) {
         try {
           await fetch('/api/contracts/save', {
@@ -45,7 +43,7 @@ export default function Home() {
       }
     };
     saveDeployedContract();
-  }, [isConfirmed, receipt, address]); // Zmieniamy też zależność na isConfirmed
+  }, [isConfirmed, receipt, address]); 
 
   const handleDeploy = (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,7 +71,7 @@ export default function Home() {
       {isClient && isConnected && (
          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
             <Link href="/my-contracts" style={{ color: '#0070f3' }}>
-              Nie pamiętasz adresu? Znajdź swoje kontrakty
+              Sprawdź swoje kontrakty
             </Link>
          </div>
       )}
@@ -86,7 +84,7 @@ export default function Home() {
             <div style={styles.container}>
               <form onSubmit={handleDeploy} style={styles.form}>
                 <label htmlFor="collectionName" style={styles.label}>Nazwa Kolekcji *</label>
-                <input id="collectionName" type="text" value={collectionName} onChange={(e) => setCollectionName(e.target.value)} placeholder="np. Moje Kolekcja" style={styles.input} required/>
+                <input id="collectionName" type="text" value={collectionName} onChange={(e) => setCollectionName(e.target.value)} placeholder="np. Moja Kolekcja" style={styles.input} required/>
                 <label htmlFor="collectionSymbol" style={styles.label}>Symbol (Ticker) *</label>
                 <input id="collectionSymbol" type="text" value={collectionSymbol} onChange={(e) => setCollectionSymbol(e.target.value)} placeholder="np. MKT" style={styles.input} required/>
                 <label htmlFor="metadataUrl" style={styles.label}>Link do metadanych (Base URI) *</label>
