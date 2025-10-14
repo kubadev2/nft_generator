@@ -7,11 +7,11 @@ import {
   optimism,
   arbitrum,
   base,
-  goerli,
+  sepolia,
 } from 'wagmi/chains';
 
 
-const chains = [mainnet, polygon, optimism, arbitrum, base, goerli] as const;
+const chains = [mainnet, polygon, optimism, arbitrum, base, sepolia] as const;
 
 
 const { connectors } = getDefaultWallets({
@@ -28,6 +28,6 @@ export const config = createConfig({
     [optimism.id]: http(),
     [arbitrum.id]: http(),
     [base.id]: http(),
-    [goerli.id]: http(),
+    [sepolia.id]: http(),
   },
 });
