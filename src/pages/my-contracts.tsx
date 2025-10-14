@@ -8,11 +8,9 @@ import { type Address } from 'viem';
 
 interface FetchedContract {
   contractAddress: Address;
-  collectionName: string;
+  collectionName?: string;
   createdAt: number;
 }
-
-const shortenAddress = (addr: string) => `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
 
 export default function MyContractsPage() {
   const { address, isConnected } = useAccount();
@@ -41,6 +39,7 @@ export default function MyContractsPage() {
         setIsLoading(false);
       }
     };
+
     fetchContracts();
   }, [isConnected, address]);
 
@@ -61,19 +60,21 @@ export default function MyContractsPage() {
               userContracts.length > 0 ? (
                 <>
                   <h3>Twoje wdrożone kontrakty:</h3>
-                  <ul style={{ listStyle: 'none', padding: 0 }}>
+                  <div style={{ listStyle: 'none', padding: 0 }}>
                     {userContracts.map(record => (
-                      <li key={record.contractAddress} style={{ marginBottom: '1rem', border: '1px solid #eee', padding: '1rem', borderRadius: '8px' }}>
-                        <Link href={`/manage/${record.contractAddress}`} style={styles.link}>
-                          <strong style={{ fontSize: '1.2rem' }}>{record.collectionName}</strong>
-                        </Link>
-                        <div style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.5rem' }}>
-                          <p style={{ margin: 0 }}>Adres: {shortenAddress(record.contractAddress)}</p>
-                          <p style={{ margin: 0 }}>Wdrożono: {new Date(record.createdAt).toLocaleString()}</p>
+                      <Link key={record.contractAddress} href={`/manage/${record.contractAddress}`} style={styles.link}>
+                        <div>
+                          <strong style={{ fontSize: '1.2rem', display: 'block' }}>
+                            {record.collectionName ?? record.contractAddress}
+                          </strong>
+                          <div style={{ fontSize: '0.9rem', color: '#888', marginTop: '0.5rem' }}>
+                            <p style={styles.address}>Adres: {record.contractAddress}</p>
+                            <p style={{ margin: 0 }}>Wdrożono: {new Date(record.createdAt).toLocaleString()}</p>
+                          </div>
                         </div>
-                      </li>
+                      </Link>
                     ))}
-                  </ul>
+                  </div>
                 </>
               ) : (
                 <p>Nie znaleziono żadnych kontraktów wdrożonych z tego adresu.</p>
@@ -93,6 +94,19 @@ const styles: { [key: string]: React.CSSProperties } = {
     title: { margin: 0 },
     container: { maxWidth: '700px', margin: '2rem auto', padding: '2rem', border: '1px solid #ddd', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' },
     results: { textAlign: 'left' },
-    link: { color: '#0070f3', textDecoration: 'none' },
+    link: { 
+      display: 'block',
+      color: 'inherit',
+      textDecoration: 'none', 
+      marginBottom: '1rem', 
+      border: '1px solid #444', 
+      padding: '1rem', 
+      borderRadius: '8px',
+      transition: 'background-color 0.2s ease',
+    },
+    address: { 
+      margin: 0, 
+      wordBreak: 'break-all'
+    },
     backLink: { display: 'block', textAlign: 'center', marginTop: '2rem', color: '#0070f3' }
 };
