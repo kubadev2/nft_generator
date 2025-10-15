@@ -5,9 +5,10 @@ import { DynamicNFTAbi } from '../utils/DynamicNFTAbi';
 import { DynamicNFTBytecode } from '../utils/DynamicNFTBytecode';
 import { type Address } from 'viem';
 import Link from 'next/link';
+import { getChainInfo } from '@/lib/chains';
 
 export default function Home() {
-  const { isConnected, address } = useAccount();
+  const { isConnected, address, chainId } = useAccount(); 
   const [collectionName, setCollectionName] = useState('');
   const [collectionSymbol, setCollectionSymbol] = useState('');
   const [metadataUrl, setMetadataUrl] = useState('');
@@ -21,12 +22,11 @@ export default function Home() {
   useEffect(() => { if (isConnected && address) { setMintToAddress(address); } }, [isConnected, address]);
 
   const { data: hash, error, isPending, deployContract } = useDeployContract();
-  
   const { isLoading: isConfirming, isSuccess: isConfirmed, data: receipt } = useWaitForTransactionReceipt({ hash });
 
-   useEffect(() => {
+  useEffect(() => {
     const saveDeployedContract = async () => {
-      if (isConfirmed && receipt?.contractAddress && address) {
+      if (isConfirmed && receipt?.contractAddress && address && chainId) {
         try {
           await fetch('/api/contracts/save', {
             method: 'POST',
@@ -35,6 +35,7 @@ export default function Home() {
               contractAddress: receipt.contractAddress,
               deployerAddress: address,
               collectionName: collectionName,
+              chainId: chainId, 
             }),
           });
           console.log('Zapisano kontrakt w bazie danych!');
@@ -44,23 +45,20 @@ export default function Home() {
       }
     };
     saveDeployedContract();
-  }, [isConfirmed, receipt, address, collectionName]);
+  }, [isConfirmed, receipt, address, collectionName, chainId]);
 
   const handleDeploy = (e: React.FormEvent) => {
     e.preventDefault();
     if (!address || !mintToAddress) return;
     const maxSupplyValue = isUnlimited ? 0n : BigInt(maxSupply);
     const args = [
-      collectionName,
-      collectionSymbol,
-      metadataUrl,
-      maxSupplyValue,
-      address,
-      mintToAddress as Address,
-      BigInt(initialMintAmount)
+      collectionName, collectionSymbol, metadataUrl, maxSupplyValue, address,
+      mintToAddress as Address, BigInt(initialMintAmount)
     ] as const;
     deployContract({ abi: DynamicNFTAbi, bytecode: DynamicNFTBytecode, args });
   };
+
+  const currentChainInfo = getChainInfo(chainId);
 
   return (
     <main style={styles.main}>
@@ -69,23 +67,12 @@ export default function Home() {
         <ConnectButton />
       </div>
       <div style={{ textAlign: 'center', marginBottom: '2rem', display: 'flex', justifyContent: 'center', gap: '2rem' }}>
-        <Link href="/instructions" style={{ color: '#0070f3' }}>
-          Jak przygotować metadane?
-        </Link>
+        <Link href="/my-contracts" style={{ color: '#0070f3' }}>Sprawdź swoje kontrakty</Link>
+        <Link href="/instructions" style={{ color: '#0070f3' }}>Jak przygotować metadane?</Link>
       </div>
-      {isClient && isConnected && (
-         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-            <Link href="/my-contracts" style={{ color: '#0070f3' }}>
-              Sprawdź swoje kontrakty
-            </Link>
-         </div>
-      )}
-
       {isClient && (
         <>
-          {!isConnected ? (
-            <p style={styles.infoText}>Połącz portfel, aby rozpocząć.</p>
-          ) : (
+          {!isConnected ? ( <p style={styles.infoText}>Połącz portfel, aby rozpocząć.</p> ) : (
             <div style={styles.container}>
               <form onSubmit={handleDeploy} style={styles.form}>
                 <label htmlFor="collectionName" style={styles.label}>Nazwa Kolekcji *</label>
@@ -113,13 +100,13 @@ export default function Home() {
                 </button>
               </form>
               <div style={styles.status}>
-                {hash && <p>Hash transakcji: <a href={`https://sepolia.etherscan.io/tx/${hash}`} target="_blank" rel="noopener noreferrer">{hash}</a></p>}
+                {hash && <p>Hash transakcji: <a href={`${currentChainInfo.explorerUrl}/tx/${hash}`} target="_blank" rel="noopener noreferrer">{hash}</a></p>}
                 {isConfirming && <p>Oczekiwanie na potwierdzenie...</p>}
                 {isConfirmed && receipt && (
                   <div>
                     <p style={{ color: 'green' }}>✅ Sukces! Kontrakt wdrożony.</p>
                     <p>Adres kontraktu: <strong>{receipt.contractAddress}</strong></p>
-                    <a href={`https://sepolia.etherscan.io/address/${receipt.contractAddress}`} target="_blank" rel="noopener noreferrer">Zobacz na Etherscan</a>
+                    <a href={`${currentChainInfo.explorerUrl}/address/${receipt.contractAddress}`} target="_blank" rel="noopener noreferrer">Zobacz w eksploratorze</a>
                     <br />
                     <Link href={`/manage/${receipt.contractAddress}`} style={{ color: '#0070f3', fontWeight: 'bold', marginTop: '1rem', display: 'inline-block' }}>
                       Zarządzaj swoim kontraktem

@@ -1,4 +1,3 @@
-// src/pages/api/contracts/save.ts
 import { getStore } from '@netlify/blobs';
 import { NextApiRequest, NextApiResponse } from 'next';
 
@@ -9,9 +8,9 @@ export default async function handler(
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
-  
-  const { contractAddress, deployerAddress, collectionName } = req.body;
-  if (!contractAddress || !deployerAddress || !collectionName) {
+
+  const { contractAddress, deployerAddress, collectionName, chainId } = req.body;
+  if (!contractAddress || !deployerAddress || !collectionName || !chainId) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
@@ -25,6 +24,7 @@ export default async function handler(
       const newRecord = {
         contractAddress,
         collectionName,
+        chainId,
         createdAt: Date.now(),
       };
       existingContracts.push(newRecord);

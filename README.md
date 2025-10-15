@@ -1,40 +1,79 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Generator Kontraktów NFT
 
-## Getting Started
+Prosta, ale potężna aplikacja webowa pozwalająca użytkownikom na błyskawiczne generowanie i wdrażanie własnych smart kontraktów dla kolekcji NFT (standard ERC-721) na blockchainie Ethereum.
 
-First, run the development server:
+**[Zobacz demo na żywo](https://nft-generator-pow.netlify.app/)** 🚀
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## ## Funkcjonalności
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+* **Łączenie portfela:** Prosta i bezpieczna integracja z popularnymi portfelami (MetaMask, WalletConnect, Coinbase Wallet itd.) dzięki RainbowKit.
+* **Dynamiczny formularz:** Intuicyjny interfejs do konfiguracji parametrów kontraktu:
+    * Nazwa kolekcji i symbol (ticker).
+    * Limit podaży (lub kolekcja nielimitowana).
+    * Adres do mintowania pierwszych tokenów.
+    * Link do metadanych (Base URI).
+* **Uniwersalny Smart Kontrakt:** Jeden inteligentny kontrakt w Solidity, który automatycznie obsługuje dwa typy metadanych:
+    1.  **Unikalne NFT:** Każdy token ma inny plik metadanych (np. `1.json`, `2.json`...).
+    2.  **Identyczne NFT:** Wszystkie tokeny w kolekcji korzystają z jednego pliku metadanych.
+* **Zapisywanie wdrożeń:** Aplikacja automatycznie zapisuje informacje o wdrożonych kontraktach w trwałej bazie danych (Netlify Blobs), łącząc je z adresem portfela użytkownika.
+* **Zarządzanie kolekcją:** Dedykowane podstrony do:
+    * Przeglądania listy swoich wdrożonych kontraktów.
+    * Mintowania dodatkowych tokenów po wdrożeniu kontraktu.
+* **Instrukcja:** Wbudowana podstrona z poradnikiem, jak przygotować i hostować metadane na IPFS przy użyciu Pinaty.
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+---
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+## ## Technologie
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+* **Frontend:** Next.js, React, TypeScript
+* **Web3:** RainbowKit, wagmi, viem
+* **Smart Kontrakt:** Solidity, OpenZeppelin
+* **Backend i Baza Danych:** Netlify Functions, Netlify Blobs
+* **Hosting:** Netlify
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## ## Uruchomienie lokalne
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Aby uruchomić projekt na swoim komputerze, postępuj zgodnie z poniższymi krokami.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+1.  **Sklonuj repozytorium:**
+    ```bash
+    git clone [https://github.com/kubadev2/nft_generator.git](https://github.com/kubadev2/nft_generator.git)
+    ```
 
-## Deploy on Vercel
+2.  **Przejdź do folderu projektu:**
+    ```bash
+    cd nft-generator
+    ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+3.  **Zainstaluj zależności:**
+    ```bash
+    npm install
+    ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+4.  **Skonfiguruj zmienne środowiskowe:**
+    Stwórz plik `.env.local` w głównym folderze projektu i dodaj do niego swój Project ID z WalletConnect (niezbędny do działania RainbowKit).
+    
+    ```
+    NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=twoj_walletconnect_project_id
+    ```
+    *Możesz go uzyskać za darmo na stronie [WalletConnect Cloud](https://cloud.walletconnect.com/).*
+
+5.  **Uruchom serwer deweloperski:**
+    ```bash
+    npm run dev
+    ```
+    Aplikacja będzie dostępna pod adresem `http://localhost:3000`.
+
+---
+
+## ## Jak używać aplikacji?
+
+1.  **Przygotuj metadane:** Skorzystaj ze strony `/instructions`, aby przygotować obrazki i pliki JSON, a następnie wgraj je na IPFS (np. przez Pinatę). Skopiuj link do folderu lub pliku z metadanymi.
+2.  **Połącz portfel:** Wejdź na stronę główną i połącz swój portfel kryptowalutowy, upewniając się, że jesteś na sieci testowej Sepolia.
+3.  **Wypełnij formularz:** Podaj nazwę kolekcji, symbol, link do metadanych (pamiętając o formacie!) i pozostałe parametry.
+4.  **Wdróż kontrakt:** Kliknij przycisk i potwierdź transakcję w portfelu. Po chwili otrzymasz potwierdzenie i link do Etherscan oraz do strony zarządzania.
+5.  **Zarządzaj kontraktami:** Przejdź na podstronę "Sprawdź swoje kontrakty", aby zobaczyć listę wszystkich wdrożonych przez Ciebie kolekcji. Z tego miejsca możesz przejść do panelu zarządzania i mintować kolejne tokeny.
