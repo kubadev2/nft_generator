@@ -1,3 +1,4 @@
+// src/pages/instructions.tsx
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import Link from 'next/link';
 
@@ -20,7 +21,9 @@ export default function InstructionsPage() {
         <section>
           <h2>Struktura pliku JSON</h2>
           <p>Każdy plik metadanych to prosty plik tekstowy w formacie JSON. Poniżej znajduje się szablon, który możesz skopiować i dostosować:</p>
-          <pre style={styles.codeBlock}>
+          
+          {/* eslint-disable-next-line react/no-unescaped-entities */}
+          <div style={styles.codeBlock}>
             {`{
   "name": "Nazwa Twojego NFT #1",
   "description": "Opis Twojego NFT, jego historia lub cechy.",
@@ -41,7 +44,7 @@ export default function InstructionsPage() {
     }
   ]
 }`}
-          </pre>
+          </div>
           <ul>
             <li><strong>name</strong>: Nazwa NFT (często z numerem ID).</li>
             <li><strong>description</strong>: Dłuższy opis.</li>
@@ -59,7 +62,9 @@ export default function InstructionsPage() {
             <li><strong>Załóż darmowe konto</strong> na <a href="https://pinata.cloud" target="_blank" rel="noopener noreferrer">Pinata</a>.</li>
             <li><strong>Przygotuj obrazki:</strong> Stwórz na komputerze folder i umieść w nim wszystkie swoje obrazki, nazywając je kolejno: `1.png`, `2.png`, `3.png` itd.</li>
             <li><strong>Wgraj folder z obrazkami na Pinatę:</strong> Otrzymasz unikalny identyfikator (CID) tego folderu. Skopiuj go.</li>
-            <li><strong>Przygotuj pliki JSON:</strong> Stwórz drugi folder na pliki z metadanymi. Dla każdego obrazka stwórz odpowiadający mu plik JSON (`1.json`, `2.json` itd.). W każdym pliku JSON zaktualizuj pole `"image"`, wklejając skopiowany CID, np. `"image": "ipfs://TWOJ_CID_OBRAZKOW/1.png"`.</li>
+            {/* eslint-disable-next-line react/no-unescaped-entities */}
+            <li><strong>Przygotuj pliki JSON:</strong> Stwórz drugi folder na pliki z metadanymi. Dla każdego obrazka stwórz odpowiadający mu plik JSON (`1.json`, `2.json` itd.). W każdym pliku JSON zaktualizuj pole 'image', wklejając skopiowany CID, np. 'image': 'ipfs://TWOJ_CID_OBRAZKOW/1.png'.</li>
+            
             <li><strong>Wgraj folder z plikami JSON na Pinatę:</strong> Otrzymasz drugi, nowy CID – tym razem dla folderu z metadanymi.</li>
           </ol>
         </section>
@@ -86,6 +91,7 @@ export default function InstructionsPage() {
   );
 }
 
+// Style
 const styles: { [key: string]: React.CSSProperties } = {
     main: { fontFamily: 'sans-serif', padding: '2rem' },
     header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' },
@@ -99,6 +105,7 @@ const styles: { [key: string]: React.CSSProperties } = {
       whiteSpace: 'pre-wrap',
       wordBreak: 'break-all',
       fontSize: '0.9rem',
+      fontFamily: 'monospace'
     },
     codeExample: {
       backgroundColor: '#f5f5f5',
