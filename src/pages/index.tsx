@@ -69,9 +69,6 @@ export default function Home() {
         <ConnectButton />
       </div>
       <div style={{ textAlign: 'center', marginBottom: '2rem', display: 'flex', justifyContent: 'center', gap: '2rem' }}>
-        <Link href="/my-contracts" style={{ color: '#0070f3' }}>
-          Sprawdź swoje kontrakty
-        </Link>
         <Link href="/instructions" style={{ color: '#0070f3' }}>
           Jak przygotować metadane?
         </Link>
