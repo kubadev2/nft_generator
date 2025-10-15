@@ -1,59 +1,45 @@
-// src/pages/manage/[contractAddress].tsx
-
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useRouter } from 'next/router';
 import { useState, useMemo } from 'react';
 import { useAccount, useReadContracts, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { DynamicNFTAbi } from '@/utils/DynamicNFTAbi'; 
+import { DynamicNFTAbi } from '@/utils/DynamicNFTAbi';
 import { type Address } from 'viem';
 import Link from 'next/link';
+import { getChainInfo } from '@/lib/chains';
 
 export default function ManageContract() {
   const router = useRouter();
   const { contractAddress } = router.query;
-  const { isConnected } = useAccount();
+  const { isConnected, chainId } = useAccount(); 
 
   const [mintTo, setMintTo] = useState<Address | ''>('');
   const [quantity, setQuantity] = useState('1');
 
-  const contract = {
-    address: contractAddress as Address,
-    abi: DynamicNFTAbi,
-  };
-  
+  const contract = { address: contractAddress as Address, abi: DynamicNFTAbi };
   const { data: contractData, isLoading: isReading } = useReadContracts({
     contracts: [
       { ...contract, functionName: 'name' },
       { ...contract, functionName: 'maxSupply' },
       { ...contract, functionName: 'nextTokenId' },
     ],
-    query: {
-      enabled: !!contractAddress, 
-    },
+    query: { enabled: !!contractAddress },
   });
 
-  const [name, maxSupply, totalSupply] = useMemo(() => {
-    return [
-      contractData?.[0]?.result as string | undefined,
-      contractData?.[1]?.result as bigint | undefined,
-      contractData?.[2]?.result as bigint | undefined,
-    ]
-  }, [contractData]);
+  const [name, maxSupply, totalSupply] = useMemo(() => [
+    contractData?.[0]?.result as string | undefined,
+    contractData?.[1]?.result as bigint | undefined,
+    contractData?.[2]?.result as bigint | undefined,
+  ], [contractData]);
 
   const { data: hash, error, isPending, writeContract } = useWriteContract();
-
   const handleMint = (e: React.FormEvent) => {
     e.preventDefault();
     if (!contractAddress || !mintTo) return;
-    writeContract({
-      address: contractAddress as Address,
-      abi: DynamicNFTAbi,
-      functionName: 'mint',
-      args: [mintTo, BigInt(quantity)],
-    });
+    writeContract({ address: contractAddress as Address, abi: DynamicNFTAbi, functionName: 'mint', args: [mintTo, BigInt(quantity)] });
   };
-
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
+
+  const currentChainInfo = getChainInfo(chainId);
   
   if (!contractAddress || isReading) return <p>Ładowanie danych kontraktu...</p>;
 
@@ -69,38 +55,28 @@ export default function ManageContract() {
       <div style={styles.container}>
         <p>Adres kontraktu: <strong>{contractAddress}</strong></p>
         <p>Wymintowano do tej pory: <strong>{totalSupply?.toString() ?? '...'}</strong></p>
-        
-        {isLimited ? (
-          <p style={{ fontWeight: 'bold' }}>
-            Pozostało do wymintowania: {remainingSupply} / {maxSupply?.toString()}
-          </p>
-        ) : (
-          <p style={{ fontWeight: 'bold' }}>Kolekcja nielimitowana</p>
-        )}
-
+        {isLimited ? (<p style={{ fontWeight: 'bold' }}>Pozostało do wymintowania: {remainingSupply} / {maxSupply?.toString()}</p>) : (<p style={{ fontWeight: 'bold' }}>Kolekcja nielimitowana</p>)}
         <hr style={{margin: '2rem 0'}} />
         <h2 style={styles.subtitle}>Wymintuj nowe tokeny</h2>
         {isConnected ? (
           <form onSubmit={handleMint} style={styles.form}>
             <label htmlFor="mintTo" style={styles.label}>Adres (dla kogo mintować)</label>
-            <input id="mintTo" type="text" value={mintTo} onChange={(e) => setMintTo(e.target.value as Address)} placeholder="0x..." style={styles.input} required />
+            <input id="mintTo" type="text" value={mintTo} onChange={(e) => setMintTo(e.target.value as Address)} placeholder="0x..." style={styles.input} required/>
             <label htmlFor="quantity" style={styles.label}>Ilość</label>
-            <input id="quantity" type="number" min="1" value={quantity} onChange={(e) => setQuantity(e.target.value)} style={styles.input} required />
+            <input id="quantity" type="number" min="1" value={quantity} onChange={(e) => setQuantity(e.target.value)} style={styles.input} required/>
             <button type="submit" style={styles.button} disabled={isPending || isConfirming}>
               {isPending ? 'Czekam na podpis...' : isConfirming ? 'Potwierdzanie...' : 'Mintuj'}
             </button>
           </form>
-        ) : (
-          <p>Połącz portfel właściciela, aby zarządzać kontraktem.</p>
-        )}
+        ) : (<p>Połącz portfel właściciela, aby zarządzać kontraktem.</p>)}
         <div style={styles.status}>
-          {hash && <p>Hash transakcji: <a href={`https://sepolia.etherscan.io/tx/${hash}`} target='_blank' rel='noopener noreferrer'>{hash}</a></p>}
+          {hash && <p>Hash transakcji: <a href={`${currentChainInfo.explorerUrl}/tx/${hash}`} target='_blank' rel='noopener noreferrer'>{hash}</a></p>}
           {isConfirming && <p>Potwierdzanie transakcji...</p>}
           {isConfirmed && <p style={{color: 'green'}}>✅ Sukces! Tokeny zostały wymintowane.</p>}
           {error && <p style={{ color: 'red' }}>Błąd: {error.message}</p>}
         </div>
       </div>
-      <Link href="/" style={styles.backLink}>Powrót do strony głównej</Link>
+      <Link href="/my-contracts" style={styles.backLink}>Powrót do strony głównej</Link>
     </main>
   );
 }
@@ -108,12 +84,7 @@ export default function ManageContract() {
 const styles: { [key: string]: React.CSSProperties } = {
   main: { fontFamily: 'sans-serif', padding: '2rem' },
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' },
-  title: { margin: 0,
-    maxWidth: 'calc(100% - 200px)',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap'
-},
+  title: { margin: 0, maxWidth: 'calc(100% - 200px)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
   container: { maxWidth: '500px', margin: '2rem auto', padding: '2rem', border: '1px solid #ddd', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' },
   form: { display: 'flex', flexDirection: 'column', gap: '1rem' },
   subtitle: { marginTop: 0, textAlign: 'center' },

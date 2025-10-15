@@ -48,7 +48,7 @@ export default function InstructionsPage() {
             {`{
   "name": "Złota Moneta",
   "description": "Moneta kolekcjonerska dla wszystkich uczestników.",
-  "image": "ipfs://CID_POJEDYNCZEGO_OBRAZKA/image.png",
+  "image": "ipfs://CID_POJEDYNCZEGO_OBRAZKA",
   "attributes": [
     {
       "trait_type": "Materiał",
